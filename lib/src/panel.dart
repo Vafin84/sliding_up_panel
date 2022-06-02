@@ -258,13 +258,29 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
             ? AnimatedBuilder(
                 animation: _ac,
                 builder: (context, child) {
-                  return Positioned(
-                    top: widget.parallaxEnabled ? _getParallax() : 0.0,
-                    child: child ?? SizedBox(),
+                  print(_ac.value);
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            child: widget.body),
+                      ),
+                      SizedBox(
+                        height:
+                            (widget.maxHeight - widget.minHeight) * _ac.value,
+                      )
+                    ],
                   );
+                  // return Positioned(
+                  //   top: widget.parallaxEnabled ? _getParallax() : 0.0,
+                  //   child: child ?? SizedBox(),
+                  // );
                 },
                 child: Container(
-                  height: MediaQuery.of(context).size.height,
+                  height: MediaQuery.of(context).size.height -
+                      _ac.value * (widget.maxHeight - widget.minHeight) +
+                      widget.minHeight,
                   width: MediaQuery.of(context).size.width,
                   child: widget.body,
                 ),

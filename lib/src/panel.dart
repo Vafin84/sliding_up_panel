@@ -19,6 +19,8 @@ enum SlideDirection {
 
 enum PanelState { OPEN, CLOSED }
 
+enum BodyType { SIMPLE, PARALLAX, AUTOSIZE }
+
 class SlidingUpPanel extends StatefulWidget {
   /// The Widget that slides into view. When the
   /// panel is collapsed and if [collapsed] is null,
@@ -131,10 +133,10 @@ class SlidingUpPanel extends StatefulWidget {
   /// is fully collapsed.
   final VoidCallback? onPanelClosed;
 
-  /// If non-null and true, the SlidingUpPanel exhibits a
-  /// parallax effect as the panel slides up. Essentially,
-  /// the body slides up as the panel slides up.
-  final bool parallaxEnabled;
+  //SIMPLE - the dimensions of the body in which the content is located do not change.
+  //PARALLAX - parallax effect as the panel slides up. Essentially, the body slides up as the panel slides up.
+  //AUTOSIZE - the height of the body decreases as the panel slides up.
+  final BodyType bodyType;
 
   /// Allows for specifying the extent of the parallax effect in terms
   /// of the percentage the panel has slid up/down. Recommended values are
@@ -159,44 +161,44 @@ class SlidingUpPanel extends StatefulWidget {
   /// by default the Panel is open and must be swiped closed by the user.
   final PanelState defaultPanelState;
 
-  SlidingUpPanel(
-      {Key? key,
-      this.panel,
-      this.panelBuilder,
-      this.body,
-      this.collapsed,
-      this.minHeight = 100.0,
-      this.maxHeight = 500.0,
-      this.snapPoint,
-      this.border,
-      this.borderRadius,
-      this.boxShadow = const <BoxShadow>[
-        BoxShadow(
-          blurRadius: 8.0,
-          color: Color.fromRGBO(0, 0, 0, 0.25),
-        )
-      ],
-      this.color = Colors.white,
-      this.padding,
-      this.margin,
-      this.renderPanelSheet = true,
-      this.panelSnapping = true,
-      this.controller,
-      this.backdropEnabled = false,
-      this.backdropColor = Colors.black,
-      this.backdropOpacity = 0.5,
-      this.backdropTapClosesPanel = true,
-      this.onPanelSlide,
-      this.onPanelOpened,
-      this.onPanelClosed,
-      this.parallaxEnabled = false,
-      this.parallaxOffset = 0.1,
-      this.isDraggable = true,
-      this.slideDirection = SlideDirection.UP,
-      this.defaultPanelState = PanelState.CLOSED,
-      this.header,
-      this.footer})
-      : assert(panel != null || panelBuilder != null),
+  SlidingUpPanel({
+    Key? key,
+    this.panel,
+    this.panelBuilder,
+    this.body,
+    this.collapsed,
+    this.minHeight = 100.0,
+    this.maxHeight = 500.0,
+    this.snapPoint,
+    this.border,
+    this.borderRadius,
+    this.boxShadow = const <BoxShadow>[
+      BoxShadow(
+        blurRadius: 8.0,
+        color: Color.fromRGBO(0, 0, 0, 0.25),
+      )
+    ],
+    this.color = Colors.white,
+    this.padding,
+    this.margin,
+    this.renderPanelSheet = true,
+    this.panelSnapping = true,
+    this.controller,
+    this.backdropEnabled = false,
+    this.backdropColor = Colors.black,
+    this.backdropOpacity = 0.5,
+    this.backdropTapClosesPanel = true,
+    this.onPanelSlide,
+    this.onPanelOpened,
+    this.onPanelClosed,
+    this.bodyType = BodyType.SIMPLE,
+    this.parallaxOffset = 0.1,
+    this.isDraggable = true,
+    this.slideDirection = SlideDirection.UP,
+    this.defaultPanelState = PanelState.CLOSED,
+    this.header,
+    this.footer,
+  })  : assert(panel != null || panelBuilder != null),
         assert(0 <= backdropOpacity && backdropOpacity <= 1.0),
         assert(snapPoint == null || 0 < snapPoint && snapPoint < 1.0),
         super(key: key);
@@ -259,28 +261,43 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
                 animation: _ac,
                 builder: (context, child) {
                   print(_ac.value);
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            child: widget.body),
-                      ),
-                      SizedBox(
-                        height:
-                            (widget.maxHeight - widget.minHeight) * _ac.value,
-                      )
-                    ],
-                  );
-                  // return Positioned(
-                  //   top: widget.parallaxEnabled ? _getParallax() : 0.0,
-                  //   child: child ?? SizedBox(),
-                  // );
+                  switch (widget.bodyType) {
+                    case BodyType.SIMPLE:
+                      return Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        child: widget.body,
+                      );
+                    case BodyType.PARALLAX:
+                      return Positioned(
+                        top: _getParallax(),
+                        child: child ?? SizedBox(),
+                      );
+                    case BodyType.AUTOSIZE:
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: widget.body),
+                          ),
+                          SizedBox(
+                            height: (widget.maxHeight - widget.minHeight) *
+                                _ac.value,
+                          )
+                        ],
+                      );
+
+                    default:
+                      return Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        child: widget.body,
+                      );
+                  }
                 },
                 child: Container(
-                  height: MediaQuery.of(context).size.height -
-                      _ac.value * (widget.maxHeight - widget.minHeight) +
-                      widget.minHeight,
+                  height: MediaQuery.of(context).size.height,
                   width: MediaQuery.of(context).size.width,
                   child: widget.body,
                 ),

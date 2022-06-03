@@ -216,6 +216,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
   VelocityTracker _vt = new VelocityTracker.withKind(PointerDeviceKind.touch);
 
   bool _isPanelVisible = true;
+  double _panelheight = 0.0;
 
   @override
   void initState() {
@@ -273,17 +274,19 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
                         child: child ?? SizedBox(),
                       );
                     case BodyType.AUTOSIZE:
+                      if ((widget.maxHeight - widget.minHeight) * _ac.value >=
+                          0.0) {
+                        _panelheight =
+                            (widget.maxHeight - widget.minHeight) * _ac.value;
+                      }
                       return Column(
                         children: [
                           Expanded(
-                            child: Container(
+                            child: SizedBox(
                                 width: MediaQuery.of(context).size.width,
                                 child: widget.body),
                           ),
-                          SizedBox(
-                            height: (widget.maxHeight - widget.minHeight) *
-                                _ac.value,
-                          )
+                          SizedBox(height: _panelheight)
                         ],
                       );
 

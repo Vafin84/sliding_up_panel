@@ -260,7 +260,6 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
             ? AnimatedBuilder(
                 animation: _ac,
                 builder: (context, child) {
-                  print(_ac.value);
                   switch (widget.bodyType) {
                     case BodyType.SIMPLE:
                       return Container(
